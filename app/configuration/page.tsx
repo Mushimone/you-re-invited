@@ -13,13 +13,16 @@ export default function Configurator() {
       {/* Left part */}
       <div className="w-1/3 p-4 bg-purple-100">
         <LeftPanel
+          title={title}
+          subtitle={subtitle}
+          mainContent={textArea}
           onChangeTitle={function (title: string): void {
             setTitle(title);
           }}
           onChangeSubtitle={function (subtitle: string): void {
             setSubtitle(subtitle);
           }}
-          onChangeTextArea={function (text: string): void {
+          onMainContentChange={function (text: string): void {
             setTextArea(text);
           }}
         />
