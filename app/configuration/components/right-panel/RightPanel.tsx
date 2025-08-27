@@ -15,7 +15,9 @@ export function RightPanel(props: IRightPanelProps) {
       className="h-full bg-cover bg-center flex items-center justify-center"
       style={{
         backgroundImage: `url(${
-          bgImage ? URL.createObjectURL(bgImage[0]) : ""
+          bgImage
+            ? URL.createObjectURL(bgImage[0])
+            : "https://placehold.co/300x1080"
         })`,
       }}
     >
