@@ -1,3 +1,4 @@
+import { WinterTemplate } from "@/app/templates/WinterTemplate";
 import { useWatch } from "react-hook-form";
 
 interface IRightPanelProps {}
@@ -5,28 +6,25 @@ interface IRightPanelProps {}
 export function RightPanel(props: IRightPanelProps) {
   const {} = props;
 
-  const title = useWatch({ name: "title" });
+  const name1 = useWatch({ name: "name1" });
+  const name2 = useWatch({ name: "name2" });
+  const eventDate = useWatch({ name: "eventDate" });
+
   const subtitle = useWatch({ name: "subtitle" });
-  const mainContent = useWatch({ name: "mainContent" });
-  const bgImage = useWatch({ name: "image" });
-  const visibility = useWatch({ name: "visibility" });
+  const mainParagraph = useWatch({ name: "mainContent" });
+
+  const backgroundImage = useWatch({ name: "backgroundImage" });
 
   return (
-    <div
-      className="h-full bg-cover bg-center flex items-center justify-center"
-      style={{
-        backgroundImage: `url(${
-          visibility.image && bgImage?.[0]
-            ? URL.createObjectURL(bgImage[0])
-            : "https://placehold.co/300x1080"
-        })`,
-      }}
-    >
-      <div className="p-8 bg-white text-center bg-opacity-75 min-h-[200px] opacity-90">
-        <h1>{visibility.title && title}</h1>
-        <h2>{visibility.subtitle && subtitle}</h2>
-        <p>{visibility.mainContent && mainContent}</p>
-      </div>
-    </div>
+    <WinterTemplate
+      name1={name1}
+      name2={name2}
+      eventDate={eventDate}
+      date={eventDate}
+      subtitle={subtitle}
+      mainParagraph={mainParagraph}
+      backgroundImageUrl={backgroundImage?.[0]}
+      visibility={{}}
+    />
   );
 }

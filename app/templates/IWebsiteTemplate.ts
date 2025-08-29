@@ -12,4 +12,6 @@ export interface IWebsiteTemplate {
 
   location?: string;
   date?: string;
+
+  visibility: {};
 }

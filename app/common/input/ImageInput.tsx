@@ -5,18 +5,18 @@ import { useFormContext } from "react-hook-form";
 
 interface IProps {
   label: string;
-  bgImage: string;
+  name: string;
 }
 
 export function ImageInput(props: IProps) {
-  const { bgImage, label } = props;
+  const { name, label } = props;
 
   const { register } = useFormContext();
 
   return (
     <>
-      <Label htmlFor="picture">{label}</Label>
-      <Input type="file" id="picture" {...register(bgImage)} />
+      <Label htmlFor={name}>{label}</Label>
+      <Input type="file" id={name} {...register(name)} />
     </>
   );
 }

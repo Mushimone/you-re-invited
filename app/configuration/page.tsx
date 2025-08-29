@@ -18,13 +18,13 @@ export default function Configurator() {
         },
       }}
     >
-      <div className="container-x1 flex mx-auto bg-gray-100">
+      <div className="container-x1 flex mx-auto bg-gray-100 overflow-hidden min-h-screen">
         {/* Left part */}
-        <div className="w-1/3 p-4 bg-purple-100">
+        <div className="w-1/3 p-4 bg-purple-100 overflow-y-auto h-screen">
           <LeftPanel />
         </div>
         {/* Right part */}
-        <div className="w-2/3">
+        <div className="w-2/3 overflow-y-auto h-screen border-l-2 border-gray-300">
           <RightPanel />
         </div>
       </div>
