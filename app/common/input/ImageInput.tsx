@@ -14,9 +14,14 @@ export function ImageInput(props: IProps) {
   const { register } = useFormContext();
 
   return (
-    <>
-      <Label htmlFor={name}>{label}</Label>
-      <Input type="file" id={name} {...register(name)} />
-    </>
+    <div className="w-full">
+      <Label
+        htmlFor={name}
+        className="mb-1 block text-sm font-bold text-gray-700"
+      >
+        {label}
+      </Label>
+      <Input type="file" id={name} {...register(name)} className="bg-white" />
+    </div>
   );
 }

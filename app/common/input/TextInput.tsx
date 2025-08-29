@@ -12,9 +12,14 @@ export function TextInput(props: IProps) {
   const { register } = useFormContext();
 
   return (
-    <>
-      <Label htmlFor="text">{label}</Label>
-      <Input type="text" id="text" {...register(name)} />
-    </>
+    <div className="w-full">
+      <Label
+        htmlFor="text"
+        className="mb-1 block text-sm font-bold text-gray-700"
+      >
+        {label}
+      </Label>
+      <Input type="text" id="text" className="bg-white" {...register(name)} />
+    </div>
   );
 }
