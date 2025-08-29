@@ -10,6 +10,12 @@ export default function Configurator() {
         title: "My Title",
         subtitle: "My Subtitle",
         mainContent: "This is the main content",
+        visibility: {
+          title: true,
+          subtitle: true,
+          mainContent: true,
+          image: true,
+        },
       }}
     >
       <div className="container-x1 flex mx-auto bg-gray-100">

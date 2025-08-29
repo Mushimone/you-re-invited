@@ -3,6 +3,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { EyeCheckbox } from "./EyeCheckbox";
 
 interface IInputSectionProps {
   itemKey: string;
@@ -20,7 +21,12 @@ export function InputSection(props: IInputSectionProps) {
     <AccordionItem value={itemKey}>
       <AccordionTrigger>{title}</AccordionTrigger>
       <AccordionContent className="flex flex-col gap-4 text-balance">
-        {children}
+        <div className="flex justify-between">
+          <div>{children}</div>
+          <div className="flex-end">
+            <EyeCheckbox name={`visibility.${itemKey}`} />
+          </div>
+        </div>
       </AccordionContent>
     </AccordionItem>
   );
