@@ -13,7 +13,11 @@ export function RightPanel(props: IRightPanelProps) {
   const subtitle = useWatch({ name: "subtitle" });
   const mainParagraph = useWatch({ name: "mainContent" });
 
-  const backgroundImage = useWatch({ name: "backgroundImage" });
+  const coverImageUrl = useWatch({ name: "coverImageUrl" });
+
+  const mainContentImage = useWatch({ name: "mainContentImage" });
+
+  const visibility = useWatch({ name: "visibility" });
 
   return (
     <WinterTemplate
@@ -23,8 +27,9 @@ export function RightPanel(props: IRightPanelProps) {
       date={eventDate}
       subtitle={subtitle}
       mainParagraph={mainParagraph}
-      backgroundImageUrl={backgroundImage?.[0]}
-      visibility={{}}
+      coverImageUrl={coverImageUrl?.[0]}
+      visibility={visibility}
+      extraContent1ImageUrl={mainContentImage?.[0]}
     />
   );
 }

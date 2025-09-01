@@ -5,9 +5,10 @@ import { useFormContext } from "react-hook-form";
 interface IProps {
   label: string;
   name: string;
+  disabled?: boolean;
 }
 export function TextInput(props: IProps) {
-  const { name, label } = props;
+  const { name, label, disabled } = props;
 
   const { register } = useFormContext();
 
@@ -19,7 +20,13 @@ export function TextInput(props: IProps) {
       >
         {label}
       </Label>
-      <Input type="text" id="text" className="bg-white" {...register(name)} />
+      <Input
+        type="text"
+        id="text"
+        className="bg-white"
+        {...register(name)}
+        disabled={disabled}
+      />
     </div>
   );
 }

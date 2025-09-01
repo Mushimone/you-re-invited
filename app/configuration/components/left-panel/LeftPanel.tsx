@@ -1,6 +1,6 @@
 import { ImageInput } from "@/app/common/input/ImageInput";
-import { TextAreaInput } from "@/app/common/input/TextAreaInput";
 import { TextInput } from "@/app/common/input/TextInput";
+import { MainContentInput } from "./MainContentInput";
 
 interface IProps {}
 
@@ -21,12 +21,12 @@ export function LeftPanel(props: IProps) {
       <TextInput label="Location:" name="location" />
       <TextInput name="eventDate" label="Event Date:" />
 
-      <h3 className="text-lg font-semibold mt-4">Content</h3>
+      {/* TOP */}
+      <h3 className="text-lg font-semibold">Cover Image</h3>
       <div className="w-full h-[2px] -mt-3 bg-fuchsia-600" />
-      <ImageInput name="backgroundImage" label="Add your Top Image:" />
-
-      <TextInput name="subtitle" label="Subtitle:" />
-      <TextAreaInput label="Add your Main Content:" name="mainContent" />
+      <ImageInput name="coverImageUrl" label="Add your Cover:" />
+      {/* MAIN CONTENT */}
+      <MainContentInput />
     </div>
   );
 }

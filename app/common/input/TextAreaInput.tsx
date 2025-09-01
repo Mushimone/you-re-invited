@@ -5,10 +5,11 @@ import { useFormContext } from "react-hook-form";
 interface IProps {
   label: string;
   name: string;
+  disabled?: boolean;
 }
 
 export function TextAreaInput(props: IProps) {
-  const { name, label } = props;
+  const { name, label, disabled } = props;
 
   const { register } = useFormContext();
 
@@ -25,6 +26,7 @@ export function TextAreaInput(props: IProps) {
         {...register(name)}
         className="bg-white min-h-[100px]"
         rows={5}
+        disabled={disabled}
       />
     </div>
   );

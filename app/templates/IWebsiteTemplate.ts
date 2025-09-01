@@ -4,7 +4,7 @@
 export interface IWebsiteTemplate {
   name1?: string;
   name2?: string;
-  backgroundImageUrl?: string;
+  coverImageUrl?: string;
   eventDate?: string;
   subtitle?: string;
   mainParagraph?: string;
@@ -13,5 +13,7 @@ export interface IWebsiteTemplate {
   location?: string;
   date?: string;
 
-  visibility: {};
+  visibility?: {
+    mainContent?: boolean;
+  };
 }

@@ -6,10 +6,11 @@ import { useFormContext } from "react-hook-form";
 interface IProps {
   label: string;
   name: string;
+  disabled?: boolean;
 }
 
 export function ImageInput(props: IProps) {
-  const { name, label } = props;
+  const { name, label, disabled } = props;
 
   const { register } = useFormContext();
 
@@ -21,7 +22,13 @@ export function ImageInput(props: IProps) {
       >
         {label}
       </Label>
-      <Input type="file" id={name} {...register(name)} className="bg-white" />
+      <Input
+        type="file"
+        id={name}
+        {...register(name)}
+        className="bg-white"
+        disabled={disabled}
+      />
     </div>
   );
 }
