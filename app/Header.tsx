@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { NavigationMenuLink } from "@radix-ui/react-navigation-menu";
 import Link from "next/link";
+import LoginLogoutButton from "./common/LoginLogoutButton";
 
 export function Header() {
   return (
@@ -37,12 +38,7 @@ export function Header() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link
-                  href="/login"
-                  className="px-4 py-2 rounded hover:bg-gray-800 transition"
-                >
-                  Login
-                </Link>
+                <LoginLogoutButton />
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
