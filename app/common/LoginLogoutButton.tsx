@@ -17,12 +17,12 @@ export default function LoginLogoutButton() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-      console.log("User:", user);
+      // console.log("User:", user);
     };
     fetchUser();
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        console.log("Auth state changed:", _event, session);
+        // console.log("Auth state changed:", _event, session);
         setUser(session?.user ?? null);
       }
     );
