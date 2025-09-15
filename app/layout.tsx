@@ -25,21 +25,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Header />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Header />
         {children}
+        <footer className="bg-gray-800 text-white p-4 border-t border-gray-700 text-center">
+          <p>
+            © 2025 You're Invited. Made with React.{" "}
+            <a href="#" className="hover:underline">
+              Visit our Github
+            </a>
+            .
+          </p>
+        </footer>
       </body>
-      <footer className="bg-gray-800 text-white p-4 border-t border-gray-700 text-center">
-        <p>
-          © 2025 You're Invited. Made with React.{" "}
-          <a href="#" className="hover:underline">
-            Visit our Github
-          </a>
-          .
-        </p>
-      </footer>
     </html>
   );
 }
