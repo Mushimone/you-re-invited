@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 interface IFormProps<T = any> {
@@ -17,6 +18,12 @@ export function Form(props: IFormProps) {
     defaultValues: initialValues || {},
     mode: "onChange",
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      methods.reset(initialValues);
+    }
+  }, [initialValues, methods]);
 
   return (
     <FormProvider {...methods}>

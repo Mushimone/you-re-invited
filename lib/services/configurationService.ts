@@ -71,6 +71,7 @@ class ConfigurationService {
       const { data, error } = await this.supabase
         .from("configurations")
         .update({ ...configData })
+        .eq("id", configData.id)
         .single();
 
       if (error) {
@@ -108,6 +109,26 @@ class ConfigurationService {
         data: null,
         error: (error as Error).message || "An unknown error occurred",
       };
+    }
+  }
+  async uploadImage(file: File, userId: string): Promise<string | null> {
+    try {
+      const filePath = `configurations/${userId}/${Date.now()}-${file.name}`;
+      const { data, error } = await this.supabase.storage
+        .from("images")
+        .upload(filePath, file);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      const {
+        data: { publicUrl },
+      } = this.supabase.storage.from("images").getPublicUrl(filePath);
+
+      return { url: publicUrl, error: null }.url;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
     }
   }
 }

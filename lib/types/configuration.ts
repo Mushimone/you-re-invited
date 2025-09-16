@@ -1,12 +1,12 @@
 export interface Configuration {
-  id: string;
+  id?: string;
   user_id: string;
   layout: number;
+  title?: string;
   config: {
-    title?: string;
     subtitle?: string;
     mainContent?: string;
-    image?: string;
+    image?: string | null;
   };
   created_at: string;
 }

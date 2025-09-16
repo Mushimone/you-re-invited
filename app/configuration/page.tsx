@@ -1,53 +1,64 @@
 "use client";
-import { Configuration } from "@/lib/types/configuration";
 import { Form } from "../common/form/Form";
 import { LeftPanel } from "./components/left-panel/LeftPanel";
 import { RightPanel } from "./components/right-panel/RightPanel";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/supabaseClient";
-import { configurationService } from "@/lib/services/configurationService";
+import { useUserConfiguration } from "@/lib/hooks/useUserconfiguration";
 
-export default function Configurator() {
-  const [configuration, setConfiguration] = useState<Configuration | null>(
-    null
-  );
+export default function ConfigurationPage() {
+  const { configuration, loading, error, saveConfiguration } =
+    useUserConfiguration();
+  const [formValues, setFormValues] = useState({
+    title: "My Title",
+    subtitle: "My Subtitle",
+    mainContent: "This is the main content",
+    visibility: {
+      title: true,
+      subtitle: true,
+      mainContent: true,
+      image: true,
+    },
+  });
+
   useEffect(() => {
-    // Fetch user configuration from Supabase or any other source
-    const supabase = createClient();
-    async function loadConfiguration() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    // Default values to use if no configuration exists
+    const defaultValues = {
+      title: "My Title",
+      subtitle: "My Subtitle",
+      mainContent: "This is the main content",
+      visibility: {
+        title: true,
+        subtitle: true,
+        mainContent: true,
+        image: true,
+      },
+    };
 
-      if (user) {
-        const { data, error } =
-          await configurationService.getConfigurationByUserId(user.id);
-
-        if (error) {
-          console.error("Error fetching configuration:", error);
-        } else {
-          setConfiguration(data);
-          console.log("Fetched configuration:", data);
-        }
-      }
-    }
-    loadConfiguration();
-  }, []);
-
-  return (
-    <Form
-      initialValues={{
-        title: "My Title",
-        subtitle: "My Subtitle",
-        mainContent: "This is the main content",
+    if (configuration) {
+      setFormValues({
+        title: configuration.title || defaultValues.title,
+        subtitle: configuration.config.subtitle || defaultValues.subtitle,
+        mainContent:
+          configuration.config.mainContent || defaultValues.mainContent,
         visibility: {
           title: true,
           subtitle: true,
           mainContent: true,
           image: true,
         },
-      }}
-    >
+      });
+    }
+  }, [configuration]);
+
+  const handleSubmit = async (values: typeof formValues) => {
+    const result = await saveConfiguration(values);
+    if (result) {
+      alert("Configuration saved successfully!");
+    }
+  };
+
+  return (
+    <Form initialValues={formValues} onSubmit={handleSubmit}>
       <div className="container-x1 flex mx-auto bg-gray-100">
         {/* Left part */}
         <div className="w-1/3 p-4 bg-purple-100">
