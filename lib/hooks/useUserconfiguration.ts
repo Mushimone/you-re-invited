@@ -21,11 +21,7 @@ function useUserConfiguration() {
     if (user) {
       const { data, error } =
         await configurationService.getConfigurationByUserId(user.id);
-      if (error && error !== "No rows found") {
-        setError(error);
-      } else {
-        setConfiguration(data);
-      }
+      setConfiguration(data);
     } else {
       setError("Not authenticated");
     }

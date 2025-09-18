@@ -28,6 +28,7 @@ class ConfigurationService {
         error: null,
       };
     } catch (error) {
+      console.error("Error fetching configuration:", error);
       return {
         data: null,
         error: (error as Error).message || "An unknown error occurred",
