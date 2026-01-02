@@ -4,10 +4,14 @@ import { LeftPanel } from "./components/left-panel/LeftPanel";
 import { RightPanel } from "./components/right-panel/RightPanel";
 import { use, useEffect, useMemo, useState } from "react";
 import { useUserConfiguration } from "@/lib/hooks/useUserconfiguration";
+import { PublishDialog } from "./PublishDialog";
 
 export default function ConfigurationPage() {
   const { configuration, loading, error, saveConfiguration } =
     useUserConfiguration();
+
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const defaultValues = {
     title: "My Title",
@@ -44,9 +48,11 @@ export default function ConfigurationPage() {
   }, [configuration, loading]);
 
   const handleSubmit = async (values: typeof initialValues) => {
+    console.log("Submitting form with values:", values);
     const result = await saveConfiguration(values);
     if (result) {
-      alert("Configuration saved successfully!");
+      setIsSaved(true);
+      useUserConfiguration();
     }
   };
 
@@ -69,12 +75,23 @@ export default function ConfigurationPage() {
       <div className="container-x1 flex mx-auto bg-gray-100">
         {/* Left part */}
         <div className="w-1/3 p-4 bg-purple-100">
-          <LeftPanel />
+          <LeftPanel
+            onOpenPublish={() => setShowPublishDialog(true)}
+            isSaved={isSaved}
+          />
         </div>
         {/* Right part */}
         <div className="w-2/3">
           <RightPanel />
         </div>
+      </div>
+      {/* Publish Dialog */}
+      <div className="absolute top-1/2 left-1/2 flex items-center justify-center bg-black bg-opacity-50">
+        <PublishDialog
+          isOpen={showPublishDialog}
+          onClose={() => setShowPublishDialog(false)}
+          configurationId={configuration?.id || ""}
+        />
       </div>
     </Form>
   );

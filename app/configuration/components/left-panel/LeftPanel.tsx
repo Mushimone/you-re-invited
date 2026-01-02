@@ -4,12 +4,18 @@ import { Accordion } from "@/components/ui/accordion";
 import { InputSection } from "./InputSection";
 import { ImageInput } from "@/app/common/input/ImageInput";
 import { AppButton } from "@/app/common/button/Button";
+import React from "react";
 
-interface IProps {}
+interface IProps {
+  onOpenPublish: () => void;
+  isSaved: boolean;
+}
 
 export function LeftPanel(props: IProps) {
-  const {} = props;
-
+  const { onOpenPublish, isSaved } = props;
+  const OpenPublishDialog = () => {
+    onOpenPublish();
+  };
   return (
     <div>
       <Accordion
@@ -32,8 +38,17 @@ export function LeftPanel(props: IProps) {
       </Accordion>
       <div className="p-4 flex justify-end">
         <AppButton variant="default" type="submit">
-          <span className="font-bold">Submit</span>
+          <span className="font-bold">Save</span>
         </AppButton>
+        {isSaved && (
+          <AppButton
+            variant="outline"
+            type="button"
+            onClick={OpenPublishDialog}
+          >
+            <span className="font-bold">Publish</span>
+          </AppButton>
+        )}
       </div>
     </div>
   );

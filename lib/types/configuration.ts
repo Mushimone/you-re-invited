@@ -9,6 +9,8 @@ export interface Configuration {
     image?: string | null;
   };
   created_at: string;
+  slug?: string | null;
+  published?: boolean;
 }
 
 export interface ConfigurationResponse {

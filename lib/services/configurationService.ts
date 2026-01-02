@@ -73,6 +73,7 @@ class ConfigurationService {
         .from("configurations")
         .update({ ...configData })
         .eq("id", configData.id)
+        .select()
         .single();
 
       if (error) {
@@ -132,5 +133,24 @@ class ConfigurationService {
       return null;
     }
   }
+
+  async checkSlugAvailability(slug: string): Promise<boolean> {
+    try {
+      const { data, error } = await this.supabase
+        .from("configurations")
+        .select("id")
+        .eq("slug", slug);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data?.length === 0;
+    } catch (error) {
+      console.error("Error checking slug availability:", error);
+      return false;
+    }
+  }
 }
+
 export const configurationService = new ConfigurationService();

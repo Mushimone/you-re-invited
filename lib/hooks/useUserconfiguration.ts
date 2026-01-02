@@ -28,7 +28,6 @@ function useUserConfiguration() {
     setLoading(false);
   }, []);
 
-  // Define saveConfiguration outside useEffect
   const saveConfiguration = useCallback(
     async (formData: any) => {
       setLoading(true);
@@ -45,6 +44,7 @@ function useUserConfiguration() {
       }
 
       try {
+        console.log("Saving configuration with data:", formData);
         let imageUrl = configuration?.config.image || null;
         if (formData.image && formData.image[0] instanceof File) {
           // Upload new image
@@ -87,6 +87,10 @@ function useUserConfiguration() {
             setError(error);
             return null;
           } else {
+            console.log(
+              "Configuration saved successfully, no errors, now trying to set configuration with data."
+            );
+
             setConfiguration(data);
             return data;
           }
