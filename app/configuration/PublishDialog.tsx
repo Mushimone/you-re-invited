@@ -10,15 +10,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { configurationService } from "@/lib/services/configurationService";
+import { Configuration } from "@/lib/types/configuration";
 import React from "react";
 
 interface PublishDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  configurationId: string;
+  configuration: Configuration;
+  existingSlug?: string;
 }
 export function PublishDialog(props: PublishDialogProps) {
-  const [slug, setSlug] = React.useState("");
+  const [slug, setSlug] = React.useState(props.existingSlug || "");
   const [isAvailable, setIsAvailable] = React.useState<boolean | null>(null);
   const [isChecking, setIsChecking] = React.useState(false);
 
@@ -30,7 +32,10 @@ export function PublishDialog(props: PublishDialogProps) {
 
     const checkAvailability = async () => {
       setIsChecking(true);
-      const result = await configurationService.checkSlugAvailability(slug);
+      const result = await configurationService.checkSlugAvailability(
+        slug,
+        props.configuration.user_id
+      );
       setIsAvailable(result);
       setIsChecking(false);
     };
@@ -51,7 +56,7 @@ export function PublishDialog(props: PublishDialogProps) {
 
   const handlePublish = async () => {
     const updatedConfiguration = {
-      id: props.configurationId,
+      id: props.configuration.id,
       slug: slug,
       published: true,
     };

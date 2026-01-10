@@ -90,7 +90,8 @@ export default function ConfigurationPage() {
         <PublishDialog
           isOpen={showPublishDialog}
           onClose={() => setShowPublishDialog(false)}
-          configurationId={configuration?.id || ""}
+          configuration={configuration!}
+          existingSlug={configuration?.slug || ""}
         />
       </div>
     </Form>

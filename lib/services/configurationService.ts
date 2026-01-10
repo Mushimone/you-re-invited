@@ -134,18 +134,23 @@ class ConfigurationService {
     }
   }
 
-  async checkSlugAvailability(slug: string): Promise<boolean> {
+  async checkSlugAvailability(slug: string, userId: string): Promise<boolean> {
     try {
       const { data, error } = await this.supabase
         .from("configurations")
-        .select("id")
+        .select("id, user_id")
         .eq("slug", slug);
 
       if (error) {
         throw new Error(error.message);
       }
 
-      return data?.length === 0;
+      if (data.length === 0) {
+        return true;
+      }
+
+      const existingConfig = data[0];
+      return existingConfig.user_id === userId;
     } catch (error) {
       console.error("Error checking slug availability:", error);
       return false;

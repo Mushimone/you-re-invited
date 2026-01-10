@@ -79,6 +79,7 @@ function useUserConfiguration() {
                 mainContent: formData.mainContent,
                 image: imageUrl,
               },
+              slug: configuration.slug,
             });
 
           setLoading(false);
