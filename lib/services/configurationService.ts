@@ -150,6 +150,12 @@ class ConfigurationService {
       }
 
       const existingConfig = data[0];
+      console.log(
+        "Existing config for slug:",
+        existingConfig,
+        "User ID:",
+        userId
+      );
       return existingConfig.user_id === userId;
     } catch (error) {
       console.error("Error checking slug availability:", error);

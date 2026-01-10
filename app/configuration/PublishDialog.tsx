@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { checkSlugAvailability } from "@/lib/configuration-actions";
 import { configurationService } from "@/lib/services/configurationService";
 import { Configuration } from "@/lib/types/configuration";
 import React from "react";
@@ -32,7 +33,7 @@ export function PublishDialog(props: PublishDialogProps) {
 
     const checkAvailability = async () => {
       setIsChecking(true);
-      const result = await configurationService.checkSlugAvailability(
+      const result = await checkSlugAvailability(
         slug,
         props.configuration.user_id
       );
