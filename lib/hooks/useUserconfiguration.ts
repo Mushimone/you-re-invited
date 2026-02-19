@@ -5,7 +5,7 @@ import { configurationService } from "../services/configurationService";
 
 function useUserConfiguration() {
   const [configuration, setConfiguration] = useState<Configuration | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,40 +45,91 @@ function useUserConfiguration() {
 
       try {
         console.log("Saving configuration with data:", formData);
-        let imageUrl = configuration?.config.image || null;
-        if (formData.image && formData.image[0] instanceof File) {
-          // Upload new image
-          const { data, error } = await supabase.storage
-            .from("images")
-            .upload(
-              `${user.id}/configurations/${Date.now()}-${
-                formData.image[0].name
-              }`,
-              formData.image[0]
-            );
+        // Media upload handling
 
-          if (error) {
-            throw new Error(error.message);
-          }
-
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("images").getPublicUrl(data.path);
-
-          imageUrl = publicUrl;
+        let profile_image = configuration?.config.profile_image ?? null;
+        if (formData.profile_image?.[0] instanceof File) {
+          profile_image = await configurationService.uploadMedia(
+            formData.profile_image[0],
+            "images",
+            user.id,
+          );
         }
 
+        let bg_image = configuration?.config.bg_image ?? null;
+        if (formData.bg_image?.[0] instanceof File) {
+          bg_image = await configurationService.uploadMedia(
+            formData.bg_image[0],
+            "images",
+            user.id,
+          );
+        }
+
+        let gallery_images: string[] =
+          configuration?.config.gallery_images ?? [];
+        if (formData.gallery_images.length > 0) {
+          const newFiles: File[] = Array.from(formData.gallery_images).filter(
+            (f): f is File => f instanceof File,
+          );
+          const uploaded = await Promise.all(
+            newFiles.map((file) =>
+              configurationService.uploadMedia(file, "images", user.id),
+            ),
+          );
+          gallery_images = [
+            ...gallery_images,
+            ...(uploaded.filter(Boolean) as string[]),
+          ];
+        }
+
+        let video_url = configuration?.config.video_url ?? null;
+        if (formData.video_url?.[0] instanceof File) {
+          video_url = await configurationService.uploadMedia(
+            formData.video_url[0],
+            "videos",
+            user.id,
+          );
+        } else if (
+          typeof formData.video_url === "string" &&
+          formData.video_url
+        ) {
+          video_url = formData.video_url;
+        }
+
+        let music_url = configuration?.config.music_url ?? null;
+        if (formData.music_url?.[0] instanceof File) {
+          music_url = await configurationService.uploadMedia(
+            formData.music_url[0],
+            "music",
+            user.id,
+          );
+        } else if (
+          typeof formData.music_url === "string" &&
+          formData.music_url
+        ) {
+          music_url = formData.music_url;
+        }
+
+        // config object to save
+        const config = {
+          deceased_name: formData.deceased_name ?? null,
+          date_of_birth: formData.date_of_birth ?? null,
+          date_of_death: formData.date_of_death ?? null,
+          epitaph: formData.epitaph ?? null,
+          profile_image,
+          bg_image,
+          gallery_images,
+          video_url,
+          music_url,
+          visibility: formData.visibility ?? {},
+        };
         if (configuration) {
           // Update existing configuration
           const { data, error } =
             await configurationService.updateConfiguration({
               id: configuration.id,
               title: formData.title,
-              config: {
-                subtitle: formData.subtitle,
-                mainContent: formData.mainContent,
-                image: imageUrl,
-              },
+              config,
               slug: configuration.slug,
             });
 
@@ -89,7 +140,7 @@ function useUserConfiguration() {
             return null;
           } else {
             console.log(
-              "Configuration saved successfully, no errors, now trying to set configuration with data."
+              "Configuration saved successfully, no errors, now trying to set configuration with data.",
             );
 
             setConfiguration(data);
@@ -102,11 +153,7 @@ function useUserConfiguration() {
             created_at: new Date().toISOString(),
             layout: 1,
             title: formData.title,
-            config: {
-              subtitle: formData.subtitle,
-              mainContent: formData.mainContent,
-              image: imageUrl,
-            },
+            config,
           };
 
           const { data, error } =
@@ -128,7 +175,7 @@ function useUserConfiguration() {
         return null;
       }
     },
-    [configuration]
+    [configuration],
   );
 
   // Load configuration on mount

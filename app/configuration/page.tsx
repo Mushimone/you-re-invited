@@ -2,7 +2,7 @@
 import { Form } from "../common/form/Form";
 import { LeftPanel } from "./components/left-panel/LeftPanel";
 import { RightPanel } from "./components/right-panel/RightPanel";
-import { use, useEffect, useMemo, useState } from "react";
+import React, { use, useEffect, useMemo, useState } from "react";
 import { useUserConfiguration } from "@/lib/hooks/useUserconfiguration";
 import { PublishDialog } from "./PublishDialog";
 
@@ -12,17 +12,32 @@ export default function ConfigurationPage() {
 
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  const [publishDialogMode, setPublishDialogMode] = React.useState<
+    "edit" | "view"
+  >("edit");
 
   const defaultValues = {
-    title: "My Title",
-    subtitle: "My Subtitle",
-    mainContent: "This is the main content",
-    image: "",
+    title: "",
+    deceased_name: "",
+    date_of_birth: "",
+    date_of_death: "",
+    epitaph: "",
+    profile_image: "",
+    bg_image: "",
+    gallery_images: [],
+    video_url: "",
+    music_url: "",
     visibility: {
-      title: true,
-      subtitle: true,
-      mainContent: true,
-      image: true,
+      deceased_name: true,
+      date_of_birth: true,
+      date_of_death: true,
+      epitaph: true,
+      profile_image: true,
+      bg_image: true,
+      gallery_images: true,
+      video_url: true,
+      music_url: true,
     },
   };
 
@@ -32,27 +47,38 @@ export default function ConfigurationPage() {
     if (configuration) {
       return {
         title: configuration?.title ?? "My Title",
-        subtitle: configuration?.config.subtitle ?? "My Subtitle",
-        mainContent:
-          configuration?.config.mainContent ?? "This is the main content",
-        image: configuration?.config.image ?? "",
-        visibility: {
-          title: true,
-          subtitle: true,
-          mainContent: true,
-          image: true,
-        },
+        deceased_name:
+          configuration?.config.deceased_name ?? "My Deceased Name",
+        date_of_birth:
+          configuration?.config.date_of_birth ?? "My Date of Birth",
+        date_of_death:
+          configuration?.config.date_of_death ?? "My Date of Death",
+        epitaph: configuration?.config.epitaph ?? "My Epitaph",
+        profile_image: configuration?.config.profile_image ?? "",
+        bg_image: configuration?.config.bg_image ?? "",
+        video_url: configuration.config.video_url ?? "",
+        music_url: configuration.config.music_url ?? "",
+        gallery_images: configuration?.config.gallery_images ?? [],
+        visibility: configuration.config.visibility ?? defaultValues.visibility,
       };
     }
     return defaultValues;
   }, [configuration, loading]);
+
+  useEffect(() => {
+    if (configuration) {
+      setIsSaved(true);
+      if (configuration.published) {
+        setIsPublished(true);
+      }
+    }
+  }, [configuration]);
 
   const handleSubmit = async (values: typeof initialValues) => {
     console.log("Submitting form with values:", values);
     const result = await saveConfiguration(values);
     if (result) {
       setIsSaved(true);
-      useUserConfiguration();
     }
   };
 
@@ -76,8 +102,16 @@ export default function ConfigurationPage() {
         {/* Left part */}
         <div className="w-1/3 p-4 bg-purple-100">
           <LeftPanel
-            onOpenPublish={() => setShowPublishDialog(true)}
+            onOpenPublish={() => {
+              setPublishDialogMode("edit");
+              setShowPublishDialog(true);
+            }}
+            onViewPublished={() => {
+              setPublishDialogMode("view");
+              setShowPublishDialog(true);
+            }}
             isSaved={isSaved}
+            isPublished={isPublished}
           />
         </div>
         {/* Right part */}
@@ -92,6 +126,11 @@ export default function ConfigurationPage() {
           onClose={() => setShowPublishDialog(false)}
           configuration={configuration!}
           existingSlug={configuration?.slug || ""}
+          initiallyPublished={isPublished}
+          onPublished={() => {
+            setIsPublished(true);
+          }}
+          openMode={publishDialogMode}
         />
       </div>
     </Form>

@@ -10,7 +10,7 @@ class ConfigurationService {
   }
 
   async getConfigurationByUserId(
-    userId: string
+    userId: string,
   ): Promise<ConfigurationResponse> {
     try {
       const { data, error } = await this.supabase
@@ -38,7 +38,7 @@ class ConfigurationService {
 
   async createConfiguration(
     configData: Configuration,
-    userId: string
+    userId: string,
   ): Promise<ConfigurationResponse> {
     try {
       const { data, error } = await this.supabase
@@ -66,7 +66,7 @@ class ConfigurationService {
   }
 
   async updateConfiguration(
-    configData: Partial<Configuration>
+    configData: Partial<Configuration>,
   ): Promise<ConfigurationResponse> {
     try {
       const { data, error } = await this.supabase
@@ -113,11 +113,15 @@ class ConfigurationService {
       };
     }
   }
-  async uploadImage(file: File, userId: string): Promise<string | null> {
+  async uploadMedia(
+    file: File,
+    bucket: string,
+    userId: string,
+  ): Promise<string | null> {
     try {
-      const filePath = `configurations/${userId}/${Date.now()}-${file.name}`;
+      const filePath = `${userId}/${Date.now()}-${file.name}`;
       const { data, error } = await this.supabase.storage
-        .from("images")
+        .from(bucket)
         .upload(filePath, file);
 
       if (error) {
@@ -125,7 +129,7 @@ class ConfigurationService {
       }
       const {
         data: { publicUrl },
-      } = this.supabase.storage.from("images").getPublicUrl(filePath);
+      } = this.supabase.storage.from(bucket).getPublicUrl(filePath);
 
       return { url: publicUrl, error: null }.url;
     } catch (error) {
@@ -154,7 +158,7 @@ class ConfigurationService {
         "Existing config for slug:",
         existingConfig,
         "User ID:",
-        userId
+        userId,
       );
       return existingConfig.user_id === userId;
     } catch (error) {
