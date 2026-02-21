@@ -1,3 +1,4 @@
+import { GalleryLightbox } from "@/app/common/GalleryLightbox";
 import { format, isValid } from "date-fns";
 import { parseISO } from "date-fns/parseISO";
 import { useWatch } from "react-hook-form";
@@ -33,7 +34,10 @@ export function RightPanel(props: IRightPanelProps) {
   const music_url = useWatch({ name: "music_url" });
   const visibility = useWatch({ name: "visibility" }) ?? {};
 
-  const bgUrl = toDisplayUrl(bg_image) ?? "https://placehold.co/300x1080";
+  const bgUrl =
+    visibility.bg_image && toDisplayUrl(bg_image)
+      ? toDisplayUrl(bg_image)
+      : "https://placehold.co/300x1080";
   const portraitUrl = toDisplayUrl(profile_image);
 
   const birthYear = formatDate(date_of_birth);
@@ -43,11 +47,11 @@ export function RightPanel(props: IRightPanelProps) {
       ? `${birthYear} — ${deathYear}`
       : (birthYear ?? deathYear ?? null);
 
-  const galleryUrls: string[] = gallery_images
-    ? (Array.from(gallery_images as FileList)
-        .map((f) => (f instanceof File ? URL.createObjectURL(f) : null))
-        .filter(Boolean) as string[])
-    : [];
+  const galleryUrls: string[] = (gallery_images ?? [])
+    .map((item: File | string) =>
+      item instanceof File ? URL.createObjectURL(item) : item,
+    )
+    .filter(Boolean);
 
   return (
     <div
@@ -74,10 +78,9 @@ export function RightPanel(props: IRightPanelProps) {
         )}
 
         {/* Dates */}
-        {(visibility.date_of_birth || visibility.date_of_death) &&
-          dateRange && (
-            <p className="text-gray-500 text-sm tracking-widest">{dateRange}</p>
-          )}
+        {visibility.dates && dateRange && (
+          <p className="text-gray-500 text-sm tracking-widest">{dateRange}</p>
+        )}
 
         {/* Epitaph */}
         {visibility.epitaph && epitaph && (
@@ -88,15 +91,7 @@ export function RightPanel(props: IRightPanelProps) {
 
         {/* Gallery */}
         {visibility.gallery_images && galleryUrls.length > 0 && (
-          <div className="flex justify-center gap-2 overflow-x-auto w-full py-1">
-            {galleryUrls.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                className="h-20 w-20 object-cover rounded flex-shrink-0"
-              />
-            ))}
-          </div>
+          <GalleryLightbox urls={galleryUrls} />
         )}
 
         {/* Video */}

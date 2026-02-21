@@ -64,23 +64,30 @@ function useUserConfiguration() {
             user.id,
           );
         }
+        const incoming: (File | string)[] = Array.from(
+          formData.gallery_images ?? [],
+        );
 
-        let gallery_images: string[] =
-          configuration?.config.gallery_images ?? [];
-        if (formData.gallery_images.length > 0) {
-          const newFiles: File[] = Array.from(formData.gallery_images).filter(
-            (f): f is File => f instanceof File,
-          );
-          const uploaded = await Promise.all(
-            newFiles.map((file) =>
-              configurationService.uploadMedia(file, "images", user.id),
+        const gallery_images: string[] = (
+          await Promise.all(
+            incoming.map((item) =>
+              item instanceof File
+                ? configurationService.uploadMedia(item, "images", user.id)
+                : item,
             ),
-          );
-          gallery_images = [
-            ...gallery_images,
-            ...(uploaded.filter(Boolean) as string[]),
-          ];
-        }
+          )
+        ).filter(Boolean) as string[];
+
+        // Delete any URLs that were in the saved config but removed by the user
+        const previousUrls = configuration?.config.gallery_images ?? [];
+        const removedUrls = previousUrls.filter(
+          (url) => !gallery_images.includes(url),
+        );
+        await Promise.all(
+          removedUrls.map((url) =>
+            configurationService.deleteMedia(url, "images"),
+          ),
+        );
 
         let video_url = configuration?.config.video_url ?? null;
         if (formData.video_url?.[0] instanceof File) {

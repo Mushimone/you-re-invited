@@ -20,7 +20,8 @@ A web application where users create and manage a **digital memorial page** for 
 - **Supabase clients:** `@supabase/ssr` for SSR-safe cookie handling
 - **Date handling:** date-fns
 - **QR Code:** qrcode.react
-- **Lightbox (installed, not yet used):** yet-another-react-lightbox
+- **Lightbox:** yet-another-react-lightbox
+- **Resizable panels:** react-resizable-panels
 
 ---
 
@@ -50,11 +51,11 @@ interface Configuration {
     music_url?: string | null; // Supabase URL or Spotify/SoundCloud URL
 
     // Visibility flags — persisted, control what is shown on the public page
+    // NOTE: dates is a single combined flag for both date_of_birth and date_of_death
     visibility?: {
       deceased_name?: boolean;
       epitaph?: boolean;
-      date_of_birth?: boolean;
-      date_of_death?: boolean;
+      dates?: boolean; // controls both birth and death date display
       profile_image?: boolean;
       bg_image?: boolean;
       gallery_images?: boolean;
@@ -86,59 +87,62 @@ File path convention inside each bucket: `{userId}/{timestamp}-{filename}`
 
 ```
 lib/
-  types/configuration.ts         — Configuration and ConfigurationResponse interfaces
-  services/configurationService.ts — Supabase CRUD + uploadMedia + checkSlugAvailability
-  hooks/useUserconfiguration.ts  — React hook: loads and saves configuration, handles all media uploads
-  configuration-actions.ts       — Server Actions (currently only checkSlugAvailability)
-  auth-action.ts                 — Server Actions: login, signup, signout, signInWithGoogle
+  types/configuration.ts          — Configuration and ConfigurationResponse interfaces
+  services/configurationService.ts — Supabase CRUD + uploadMedia + deleteMedia
+  hooks/useUserconfiguration.ts   — React hook: loads and saves configuration, handles all media uploads
+  configuration-actions.ts        — Server Actions (checkSlugAvailability using admin client)
+  auth-action.ts                  — Server Actions: login, signup, signout, signInWithGoogle
 
 utils/supabase/
-  supabaseClient.tsx             — Browser client (used in hooks and client components)
-  server.ts                      — Server client (used in Server Components and Server Actions)
-  middleware.ts                  — Middleware client (session refresh on every request)
-  admin.ts                       — Admin client with SERVICE_ROLE key (bypasses RLS)
+  supabaseClient.tsx              — Browser client (used in hooks and client components)
+  server.ts                       — Server client (used in Server Components and Server Actions)
+  middleware.ts                   — Middleware client (session refresh + returns user object)
+  admin.ts                        — Admin client with SERVICE_ROLE key (bypasses RLS)
 
 app/
-  layout.tsx                     — Root layout with Header
-  page.tsx                       — Home page (currently empty div — needs implementation)
-  Header.tsx                     — Navigation header
-  globals.css                    — Global styles
+  layout.tsx                      — Root layout with Header
+  page.tsx                        — Home page (currently empty div — needs implementation)
+  Header.tsx                      — Navigation header (static: logo + LoginLogoutButton + HeaderNavItems)
+  globals.css                     — Global styles
 
   (auth)/
-    login/page.tsx               — Login page
-    signup/page.tsx              — Signup page
-    logout/page.tsx              — Logout page
-    auth/confirm/route/route.ts  — Email OTP verification handler
+    login/page.tsx                — Login page
+    signup/page.tsx               — Signup page
+    logout/page.tsx               — Logout page
+    auth/confirm/route/route.ts   — Email OTP verification handler
 
   configuration/
-    page.tsx                     — Main builder page (client component)
-    PublishDialog.tsx            — Slug entry + QR code dialog
+    page.tsx                      — Main builder page (client component, resizable panels layout)
+    PublishDialog.tsx             — Two-mode dialog: slug entry OR QR code view
     components/
       left-panel/
-        LeftPanel.tsx            — Accordion of all input sections
-        InputSection.tsx         — Accordion item wrapper with EyeCheckbox
-        EyeCheckbox.tsx          — Visibility toggle (eye icon checkbox)
+        LeftPanel.tsx             — Accordion of all input sections + Save/Publish/View buttons
+        InputSection.tsx          — Accordion item wrapper with EyeCheckbox visibility toggle
+        EyeCheckbox.tsx           — Eye icon checkbox bound to visibility.{key}
       right-panel/
-        RightPanel.tsx           — Live preview of the memorial
+        RightPanel.tsx            — Live preview using useWatch on all form fields
 
   [slug]/
-    page.tsx                     — Public memorial page (server component, dynamic route)
-
-  presentation/
-    page.tsx                     — Legacy stub, unused, can be deleted
+    page.tsx                      — Public memorial page (Server Component, dynamic route)
+                                    Requires published=true, returns 404 otherwise
+                                    Supabase RLS policy: anon can SELECT where published=true
 
   common/
-    form/Form.tsx                — react-hook-form FormProvider wrapper
-    button/Button.tsx            — AppButton wrapper around shadcn Button
+    form/Form.tsx                 — react-hook-form FormProvider wrapper
+    button/Button.tsx             — AppButton wrapper around shadcn Button
+    GalleryLightbox.tsx           — Client component: thumbnail grid + yet-another-react-lightbox
+    HeaderNavItems.tsx            — Client component: auth-reactive nav links (My Memorial, View Page)
+    LoginLogoutButton.tsx         — Client component: auth-reactive login/logout button
     input/
-      TextInput.tsx              — Labeled text input, forwards all HTML input props
-      TextAreaInput.tsx          — Labeled textarea
-      ImageInput.tsx             — File input for images, supports multiple
-      DateInput.tsx              — Date picker using shadcn Popover + Calendar + date-fns
+      TextInput.tsx               — Labeled text input, forwards all HTML input props
+      TextAreaInput.tsx           — Labeled textarea
+      ImageInput.tsx              — File input for images, supports multiple, accept="image/*"
+      DateInput.tsx               — Date picker: shadcn Popover + Calendar, stores ISO string
+      GalleryInput.tsx            — Gallery manager: thumbnails with delete buttons, Add photos button
 
-  error/page.tsx                 — Error page
+  error/page.tsx                  — Error page
 
-components/ui/                   — shadcn-generated components (do not edit manually)
+components/ui/                    — shadcn-generated components (do not edit manually)
 ```
 
 ---
@@ -148,8 +152,9 @@ components/ui/                   — shadcn-generated components (do not edit ma
 - Email/password login and signup via Supabase Auth
 - Google OAuth via `signInWithGoogle()` server action
 - Email OTP confirmation at `/auth/confirm`
-- Session is refreshed on every request by `middleware.tsx` using `updateSession()`
-- **No auth guard exists yet** — `/configuration` is accessible without login
+- Session is refreshed on every request by `middleware.tsx` via `updateSession()` — which also returns the current user object
+- **Auth guard:** `middleware.tsx` redirects unauthenticated users to `/login` if they visit any path starting with `/configuration`
+- `HeaderNavItems.tsx` subscribes to `onAuthStateChange` client-side and reactively shows/hides the "My Memorial" and "View Page ↗" nav links
 
 ---
 
@@ -179,17 +184,13 @@ components/ui/                   — shadcn-generated components (do not edit ma
 
 ## Known Issues / Bugs
 
-1. **`initialValues` has placeholder strings** — fields like `deceased_name` fall back to `"My Deceased Name"` instead of `""`. If a user saves without filling those in, the placeholder gets written to the DB.
+1. **Video URL embed conversion** — only handles YouTube (`watch?v=` → `embed/`). Vimeo URLs are not converted and will not embed correctly. Supabase Storage video URLs should render as `<video>` not `<iframe>`.
 
-2. **Gallery preview after save** — `RightPanel` uses `URL.createObjectURL` for gallery previews, which only works for `File` objects. After saving and reloading, existing gallery URLs (strings) are not displayed in the preview.
+2. **`configurationService.checkSlugAvailability`** — duplicate of the Server Action in `lib/configuration-actions.ts`. The service method uses the browser client (anon key) while the Server Action uses the admin client (bypasses RLS). `PublishDialog` correctly uses the Server Action. The service method should be removed.
 
-3. **Unused import** — `use` is imported in `app/configuration/page.tsx` but never used.
+3. **Home page** — `app/page.tsx` is an empty `<div>`. Needs a landing page.
 
-4. **Unused dependency** — `@supabase/auth-ui-react` is in `package.json` but nothing in the codebase uses it.
-
-5. **Video URL embed conversion** — only handles YouTube (`watch?v=` → `embed/`). Vimeo URLs are not converted and will not embed correctly.
-
-6. **`configurationService.checkSlugAvailability`** — this method exists on the service (browser client) but slug checking is also implemented as a Server Action in `lib/configuration-actions.ts` using the admin client. The `PublishDialog` correctly uses the Server Action. The duplicate on the service can be removed.
+4. **`app/presentation/page.tsx`** — legacy stub, replaced by `app/[slug]/page.tsx`. Can be deleted.
 
 ---
 
@@ -197,83 +198,55 @@ components/ui/                   — shadcn-generated components (do not edit ma
 
 - [x] Expanded `Configuration` type with all memorial fields
 - [x] Refactored `uploadMedia` into `configurationService` (single canonical upload path)
-- [x] `saveConfiguration` hook handles all media types: profile image, background image, gallery (multi-upload), video (file or URL), music (file or URL)
-- [x] `page.tsx` defaultValues and initialValues updated to new fields
+- [x] Added `deleteMedia` to `configurationService` — extracts path from Supabase Storage URL and removes file
+- [x] `saveConfiguration` hook handles all media types and diffs gallery to delete removed images from Storage
+- [x] `page.tsx` defaultValues and initialValues updated to new fields (empty string fallbacks, no placeholders)
 - [x] `LeftPanel` updated with all new accordion sections
 - [x] `ImageInput` updated: `name` prop, `accept="image/*"`, `multiple` support
+- [x] `GalleryInput` created: thumbnail grid with delete buttons, Add photos button, useController integration
 - [x] `TextInput` updated: forwards all HTML input props
 - [x] `DateInput` created: shadcn Popover + Calendar, stores ISO string, `isValid` guard
-- [x] `RightPanel` updated: live preview of all fields including gallery strip, video iframe, audio player
+- [x] `RightPanel` updated: live preview of all fields, handles both File and string for gallery
+- [x] `GalleryLightbox` created: clickable thumbnails + yet-another-react-lightbox
 - [x] `app/[slug]/page.tsx` created: public Server Component, `generateMetadata`, `notFound()` on missing/unpublished
-- [x] `PublishDialog` updated: two-mode dialog (edit slug / view QR), QR code display, PNG download, copyable URL
+- [x] Supabase RLS policy added: anon users can SELECT configurations where `published = true`
+- [x] `PublishDialog` updated: two-mode dialog (edit slug / view QR), QR display, PNG download, copyable URL, "Open Page" link
 - [x] `LeftPanel` updated: Save / Publish / Edit URL / View Page buttons with correct conditions
-- [x] `page.tsx` updated: `publishDialogMode` state, correct props to dialog and panel
-- [x] `yet-another-react-lightbox` installed
+- [x] `page.tsx` updated: `publishDialogMode` state, resizable panel layout via `react-resizable-panels`
+- [x] Auth guard added in `middleware.tsx`: unauthenticated users redirected to `/login` for `/configuration`
+- [x] `utils/supabase/middleware.ts` updated: returns `{ response, user }` — single `getUser()` call shared
+- [x] `HeaderNavItems.tsx` created: client-side auth-reactive nav links
+- [x] Header updated: uses `HeaderNavItems` for dynamic links
+- [x] Visibility fixed for `bg_image` (was not checked in RightPanel) and `dates` (key mismatch corrected)
+- [x] `@supabase/auth-ui-react` uninstalled (was unused)
 
 ---
 
 ## Next Steps (In Priority Order)
 
-### 1. Fix known issues (small, do first)
+### 1. Cleanup (fast)
 
-- Fix `initialValues` placeholder strings → replace all `?? "My ..."` fallbacks with `?? ""`
-- Remove unused `use` import from `app/configuration/page.tsx`
+- Remove `checkSlugAvailability` from `configurationService.ts` — Server Action is the correct implementation
+- Delete `app/presentation/page.tsx`
 
-### 2. Auth guard on `/configuration`
+### 2. Home page (`/`)
 
-- In `middleware.tsx`, check if the request path starts with `/configuration`
-- If the user is not authenticated, redirect to `/login`
-- Use `utils/supabase/middleware.ts` server client — `supabase.auth.getUser()` already runs there
+- If logged in: show link to `/configuration` + link to `/{slug}` if published
+- If not logged in: marketing/landing content with login and signup links
+- Use `HeaderNavItems` pattern (client component with `onAuthStateChange`) or make it a Server Component that reads the session
 
-### 3. Gallery improvements
+### 3. Video URL improvements
 
-- **Delete from gallery:**
-  - Add `deleteMedia(url: string, bucket: string)` to `configurationService` — extracts file path from the public URL and calls `supabase.storage.from(bucket).remove([path])`
-  - Update `saveConfiguration` in the hook to diff `configuration.config.gallery_images` (old) vs `formData.gallery_images` (new) — any URL present in old but not in new should be deleted from Storage before saving
-  - Update `GalleryInput` (new component) to show thumbnails with a delete (×) button for each; manage the current list in local state; pass final list back to react-hook-form
-- **Lightbox (click to enlarge):**
-  - Create `app/common/GalleryLightbox.tsx` client component wrapping `yet-another-react-lightbox`
-  - Use it in `RightPanel` (replace the current thumbnail strip)
-  - Use it in `app/[slug]/page.tsx` — since that is a Server Component, pass gallery URLs as props to `GalleryLightbox`
+- Create a shared utility `getVideoEmbed(url): { type: "iframe" | "video", src: string }`
+- Handle YouTube: `watch?v=ID` → `embed/ID`
+- Handle Vimeo: `vimeo.com/ID` → `player.vimeo.com/video/ID`
+- Handle Supabase Storage URLs: render as `<video controls>` instead of `<iframe>`
+- Use this utility in both `RightPanel` and `app/[slug]/page.tsx`
 
-### 4. Gallery preview after save
+### 4. Future / Nice-to-have
 
-- In `RightPanel`, the gallery rendering checks `f instanceof File` only. After a reload, `gallery_images` is an array of URL strings (not Files). Fix `galleryUrls` derivation to handle both cases:
-  ```ts
-  const galleryUrls: string[] = gallery_images
-    ? (Array.from(gallery_images)
-        .map((f) =>
-          f instanceof File
-            ? URL.createObjectURL(f)
-            : typeof f === "string"
-              ? f
-              : null,
-        )
-        .filter(Boolean) as string[])
-    : [];
-  ```
-
-### 5. Home page (`/`)
-
-- Currently an empty `<div>`
-- Should show: if logged in → link to `/configuration` + link to the published page (if published); if not logged in → marketing/landing content with login/signup links
-
-### 6. Cleanup
-
-- Remove `@supabase/auth-ui-react` from `package.json` (`npm uninstall @supabase/auth-ui-react`)
-- Remove `configurationService.checkSlugAvailability` — the Server Action in `lib/configuration-actions.ts` is the correct implementation
-- Delete `app/presentation/page.tsx` (replaced by `app/[slug]/page.tsx`)
-
-### 7. Video URL improvements
-
-- Detect Vimeo URLs (`vimeo.com/{id}`) and convert to embed format (`player.vimeo.com/video/{id}`)
-- Detect Supabase Storage URLs and render as `<video>` instead of `<iframe>`
-- Consider a shared `getVideoEmbed(url): { type: "iframe" | "video", src: string }` utility
-
-### 8. Future / Nice-to-have
-
-- Multiple memorials per user (requires a separate `memorials` table and a dashboard to manage them)
+- Comments or tributes left by visitors on the public page
+- Multiple memorials per user (requires a separate `memorials` table and a dashboard)
 - Layout variants (`layout` field is reserved but always `1`)
 - Unpublish / take down a page
 - Password-protected memorial pages
-- Comments or tributes left by visitors

@@ -6,6 +6,7 @@ import { ImageInput } from "@/app/common/input/ImageInput";
 import { AppButton } from "@/app/common/button/Button";
 import React from "react";
 import { DateInput } from "@/app/common/input/DateInput";
+import { GalleryInput } from "@/app/common/input/GalleryInput";
 
 interface IProps {
   onOpenPublish: () => void;
@@ -63,7 +64,7 @@ export function LeftPanel(props: IProps) {
         </InputSection>
 
         <InputSection title="Gallery" itemKey="gallery_images">
-          <ImageInput name="gallery_images" label="Gallery photos" multiple />
+          <GalleryInput name="gallery_images" label="Gallery photos" />
         </InputSection>
 
         <InputSection title="Video" itemKey="video_url">

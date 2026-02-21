@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Configuration } from "@/lib/types/configuration";
 import { format, parseISO, isValid } from "date-fns";
 import type { Metadata } from "next";
+import { GalleryLightbox } from "@/app/common/GalleryLightbox";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -100,15 +101,7 @@ export default async function Presentation({ params }: Props) {
         )}
 
         {v.gallery_images && config.gallery_images?.length && (
-          <div className="flex gap-2 overflow-x-auto w-full py-1">
-            {config.gallery_images.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                className="h-20 w-20 object-cover rounded flex-shrink-0"
-              />
-            ))}
-          </div>
+          <GalleryLightbox urls={config.gallery_images} />
         )}
 
         {v.video_url && config.video_url && (

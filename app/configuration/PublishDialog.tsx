@@ -150,6 +150,15 @@ export function PublishDialog(props: PublishDialogProps) {
             {/* Visible SVG for display */}
             <QRCodeSVG value={publicUrl} size={180} />
 
+            <a
+              href={publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 underline hover:text-blue-800"
+            >
+              Open memorial page ↗
+            </a>
+
             {/* Hidden canvas for PNG download */}
             <QRCodeCanvas
               value={publicUrl}

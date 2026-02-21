@@ -5,6 +5,7 @@ import { RightPanel } from "./components/right-panel/RightPanel";
 import React, { use, useEffect, useMemo, useState } from "react";
 import { useUserConfiguration } from "@/lib/hooks/useUserconfiguration";
 import { PublishDialog } from "./PublishDialog";
+import { Group, Panel, Separator } from "react-resizable-panels";
 
 export default function ConfigurationPage() {
   const { configuration, loading, error, saveConfiguration } =
@@ -30,8 +31,7 @@ export default function ConfigurationPage() {
     music_url: "",
     visibility: {
       deceased_name: true,
-      date_of_birth: true,
-      date_of_death: true,
+      dates: true,
       epitaph: true,
       profile_image: true,
       bg_image: true,
@@ -46,20 +46,18 @@ export default function ConfigurationPage() {
     if (error) return null;
     if (configuration) {
       return {
-        title: configuration?.title ?? "My Title",
-        deceased_name:
-          configuration?.config.deceased_name ?? "My Deceased Name",
-        date_of_birth:
-          configuration?.config.date_of_birth ?? "My Date of Birth",
-        date_of_death:
-          configuration?.config.date_of_death ?? "My Date of Death",
-        epitaph: configuration?.config.epitaph ?? "My Epitaph",
+        title: configuration?.title ?? "",
+        deceased_name: configuration?.config.deceased_name ?? "",
+        date_of_birth: configuration?.config.date_of_birth ?? "",
+        date_of_death: configuration?.config.date_of_death ?? "",
+        epitaph: configuration?.config.epitaph ?? "",
         profile_image: configuration?.config.profile_image ?? "",
         bg_image: configuration?.config.bg_image ?? "",
-        video_url: configuration.config.video_url ?? "",
-        music_url: configuration.config.music_url ?? "",
+        video_url: configuration?.config.video_url ?? "",
+        music_url: configuration?.config.music_url ?? "",
         gallery_images: configuration?.config.gallery_images ?? [],
-        visibility: configuration.config.visibility ?? defaultValues.visibility,
+        visibility:
+          configuration?.config.visibility ?? defaultValues.visibility,
       };
     }
     return defaultValues;
@@ -98,9 +96,17 @@ export default function ConfigurationPage() {
 
   return (
     <Form initialValues={initialValues} onSubmit={handleSubmit}>
-      <div className="container-x1 flex mx-auto bg-gray-100">
-        {/* Left part */}
-        <div className="w-1/3 p-4 bg-purple-100">
+      <Group
+        orientation="horizontal"
+        className="mx-auto bg-gray-100"
+        style={{ minHeight: "100vh" }}
+      >
+        <Panel
+          defaultSize="33%"
+          minSize="20%"
+          maxSize="60%"
+          className="p-4 bg-purple-100 overflow-y-auto"
+        >
           <LeftPanel
             onOpenPublish={() => {
               setPublishDialogMode("edit");
@@ -113,12 +119,13 @@ export default function ConfigurationPage() {
             isSaved={isSaved}
             isPublished={isPublished}
           />
-        </div>
+        </Panel>
         {/* Right part */}
-        <div className="w-2/3">
+        <Separator className="w-1 bg-purple-300 hover:bg-purple-500 cursor-col-resize transition-colors" />
+        <Panel minSize={20} className="overflow-y-auto">
           <RightPanel />
-        </div>
-      </div>
+        </Panel>
+      </Group>
       {/* Publish Dialog */}
       <div className="absolute top-1/2 left-1/2 flex items-center justify-center bg-black bg-opacity-50">
         <PublishDialog

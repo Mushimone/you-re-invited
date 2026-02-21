@@ -138,32 +138,15 @@ class ConfigurationService {
     }
   }
 
-  async checkSlugAvailability(slug: string, userId: string): Promise<boolean> {
+  async deleteMedia(url: string, bucket: string): Promise<void> {
     try {
-      const { data, error } = await this.supabase
-        .from("configurations")
-        .select("id, user_id")
-        .eq("slug", slug);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (data.length === 0) {
-        return true;
-      }
-
-      const existingConfig = data[0];
-      console.log(
-        "Existing config for slug:",
-        existingConfig,
-        "User ID:",
-        userId,
-      );
-      return existingConfig.user_id === userId;
+      const marker = `/object/public/${bucket}/`;
+      const idx = url.indexOf(marker);
+      if (idx === -1) return; // not a Supabase Storage URL, skip
+      const filePath = url.slice(idx + marker.length);
+      await this.supabase.storage.from(bucket).remove([filePath]);
     } catch (error) {
-      console.error("Error checking slug availability:", error);
-      return false;
+      console.error("Error deleting media:", error);
     }
   }
 }
