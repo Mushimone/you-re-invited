@@ -4,10 +4,15 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/supabaseClient";
 import { usePathname } from "next/navigation";
 
-export function HeaderNavItems() {
+export function HeaderNavItems({ mobile = false }: { mobile?: boolean }) {
   const [slug, setSlug] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const pathname = usePathname();
+
+  // Link classes differ between desktop nav and mobile dropdown
+  const linkClass = mobile
+    ? "px-6 py-3 hover:bg-stone-800 transition"
+    : "px-4 py-2 rounded hover:bg-stone-800 transition";
 
   useEffect(() => {
     const supabase = createClient();
@@ -59,19 +64,12 @@ export function HeaderNavItems() {
   return (
     <>
       {loggedIn && (
-        <Link
-          href="/configuration"
-          className="px-4 py-2 rounded hover:bg-gray-800 transition"
-        >
+        <Link href="/configuration" className={linkClass}>
           My Memorial
         </Link>
       )}
       {slug && (
-        <Link
-          href={`/${slug}`}
-          target="_blank"
-          className="px-4 py-2 rounded hover:bg-gray-800 transition"
-        >
+        <Link href={`/${slug}`} target="_blank" className={linkClass}>
           View Page ↗
         </Link>
       )}

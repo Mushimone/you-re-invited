@@ -17,6 +17,7 @@ export default function ConfigurationPage() {
   const [publishDialogMode, setPublishDialogMode] = React.useState<
     "edit" | "view"
   >("edit");
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
 
   const defaultValues = {
     title: "",
@@ -96,36 +97,92 @@ export default function ConfigurationPage() {
 
   return (
     <Form initialValues={initialValues} onSubmit={handleSubmit}>
-      <Group
-        orientation="horizontal"
-        className="mx-auto bg-stone-200"
-        style={{ minHeight: "100vh" }}
+      {/* ── Mobile layout (tab switcher) ── */}
+      <div
+        className="flex flex-col md:hidden"
+        style={{ minHeight: "calc(100vh - 57px)" }}
       >
-        <Panel
-          defaultSize="28%"
-          minSize="20%"
-          maxSize="50%"
-          className="p-4 bg-stone-100 overflow-y-auto border-r border-stone-300"
+        {/* Tab bar */}
+        <div className="flex border-b border-stone-200 bg-stone-100 shrink-0">
+          <button
+            type="button"
+            onClick={() => setMobileTab("edit")}
+            className={`flex-1 py-3 text-sm font-medium transition-colors ${
+              mobileTab === "edit"
+                ? "border-b-2 border-stone-800 text-stone-800"
+                : "text-stone-400"
+            }`}
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("preview")}
+            className={`flex-1 py-3 text-sm font-medium transition-colors ${
+              mobileTab === "preview"
+                ? "border-b-2 border-stone-800 text-stone-800"
+                : "text-stone-400"
+            }`}
+          >
+            Preview
+          </button>
+        </div>
+        {/* Panel content */}
+        <div className="flex-1 overflow-y-auto">
+          {mobileTab === "edit" ? (
+            <div className="p-4 bg-stone-100 min-h-full">
+              <LeftPanel
+                onOpenPublish={() => {
+                  setPublishDialogMode("edit");
+                  setShowPublishDialog(true);
+                }}
+                onViewPublished={() => {
+                  setPublishDialogMode("view");
+                  setShowPublishDialog(true);
+                }}
+                isSaved={isSaved}
+                isPublished={isPublished}
+              />
+            </div>
+          ) : (
+            <RightPanel />
+          )}
+        </div>
+      </div>
+
+      {/* ── Desktop layout (resizable panels) ── */}
+      <div className="hidden md:block">
+        <Group
+          orientation="horizontal"
+          className="mx-auto bg-stone-200"
+          style={{ minHeight: "100vh" }}
         >
-          <LeftPanel
-            onOpenPublish={() => {
-              setPublishDialogMode("edit");
-              setShowPublishDialog(true);
-            }}
-            onViewPublished={() => {
-              setPublishDialogMode("view");
-              setShowPublishDialog(true);
-            }}
-            isSaved={isSaved}
-            isPublished={isPublished}
-          />
-        </Panel>
-        {/* Right part */}
-        <Separator className="w-1 bg-stone-300 hover:bg-stone-500 cursor-col-resize transition-colors" />
-        <Panel minSize={20} className="overflow-y-auto">
-          <RightPanel />
-        </Panel>
-      </Group>
+          <Panel
+            defaultSize="28%"
+            minSize="20%"
+            maxSize="50%"
+            className="p-4 bg-stone-100 overflow-y-auto border-r border-stone-300"
+          >
+            <LeftPanel
+              onOpenPublish={() => {
+                setPublishDialogMode("edit");
+                setShowPublishDialog(true);
+              }}
+              onViewPublished={() => {
+                setPublishDialogMode("view");
+                setShowPublishDialog(true);
+              }}
+              isSaved={isSaved}
+              isPublished={isPublished}
+            />
+          </Panel>
+          <Separator className="w-1 bg-stone-300 hover:bg-stone-500 cursor-col-resize transition-colors" />
+          <Panel minSize={20} className="overflow-y-auto">
+            <RightPanel />
+          </Panel>
+        </Group>
+      </div>
+
       {/* Publish Dialog */}
       <div className="absolute top-1/2 left-1/2 flex items-center justify-center bg-black bg-opacity-50">
         <PublishDialog

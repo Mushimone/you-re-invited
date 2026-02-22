@@ -1,13 +1,23 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/supabaseClient";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export default function LoginLogoutButton() {
+export default function LoginLogoutButton({
+  mobile = false,
+}: {
+  mobile?: boolean;
+}) {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Shared classes for the mobile dropdown row style
+  const mobileClass =
+    "px-6 py-3 hover:bg-stone-800 transition text-left w-full";
+  // Shared classes for the desktop compact button style
+  const desktopClass =
+    "rounded px-4 py-2 hover:bg-stone-800 hover:text-white transition";
   useEffect(() => {
     const supabase = createClient();
     const fetchUser = async () => {
@@ -31,29 +41,24 @@ export default function LoginLogoutButton() {
 
   if (user) {
     return (
-      <Button
-        variant="ghost"
-        className="rounded hover:bg-stone-800 hover:text-white transition"
+      <button
+        className={mobile ? mobileClass : desktopClass}
         onClick={async () => {
-          // Sign out client-side so onAuthStateChange fires everywhere immediately
           const supabase = createClient();
           await supabase.auth.signOut();
           router.push("/logout");
         }}
       >
         Log out
-      </Button>
+      </button>
     );
   }
   return (
-    <Button
-      variant="ghost"
-      className="rounded hover:bg-gray-800 hover:text-white transition"
-      onClick={() => {
-        router.push("/login");
-      }}
+    <button
+      className={mobile ? mobileClass : desktopClass}
+      onClick={() => router.push("/login")}
     >
-      Login
-    </Button>
+      Sign in
+    </button>
   );
 }

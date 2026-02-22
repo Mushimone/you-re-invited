@@ -21,9 +21,9 @@ export function InputSection(props: IInputSectionProps) {
     <AccordionItem value={itemKey}>
       <AccordionTrigger>{title}</AccordionTrigger>
       <AccordionContent className="flex flex-col gap-4 text-balance">
-        <div className="flex justify-between">
-          <div>{children}</div>
-          <div className="flex-end">
+        <div className="flex gap-3 items-start justify-between">
+          <div className="flex-1 min-w-0">{children}</div>
+          <div className="flex-shrink-0 pt-1">
             <EyeCheckbox name={`visibility.${itemKey}`} />
           </div>
         </div>

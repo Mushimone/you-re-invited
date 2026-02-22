@@ -45,7 +45,7 @@ export function LeftPanel(props: IProps) {
         </InputSection>
 
         <InputSection title="Dates" itemKey="dates">
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <DateInput name="date_of_birth" label="Date of Birth" />
             <DateInput name="date_of_death" label="Date of Death" />
           </div>
@@ -78,8 +78,8 @@ export function LeftPanel(props: IProps) {
           />
         </InputSection>
       </Accordion>
-      <div className="p-4 flex justify-end gap-4">
-        <AppButton variant="default" type="submit">
+      <div className="p-4 flex flex-col sm:flex-row justify-end gap-2">
+        <AppButton variant="default" type="submit" className="w-full sm:w-auto">
           <span className="font-bold">Save</span>
         </AppButton>
         {isSaved && (
@@ -87,6 +87,7 @@ export function LeftPanel(props: IProps) {
             variant="outline"
             type="button"
             onClick={OpenPublishDialog}
+            className="w-full sm:w-auto"
           >
             <span className="font-bold">
               {isPublished ? "Edit URL" : "Publish"}
@@ -99,8 +100,9 @@ export function LeftPanel(props: IProps) {
             variant="outline"
             type="button"
             onClick={props.onViewPublished}
+            className="w-full sm:w-auto"
           >
-            <span className="font-bold">View Published Page</span>
+            <span className="font-bold">View Page</span>
           </AppButton>
         )}
       </div>
