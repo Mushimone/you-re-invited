@@ -100,24 +100,28 @@ utils/supabase/
   admin.ts                        — Admin client with SERVICE_ROLE key (bypasses RLS)
 
 app/
-  layout.tsx                      — Root layout with Header
-  page.tsx                        — Home page (currently empty div — needs implementation)
-  Header.tsx                      — Navigation header (static: logo + LoginLogoutButton + HeaderNavItems)
-  globals.css                     — Global styles
+  layout.tsx                      — Root layout with Header + footer (flex min-h-screen)
+  page.tsx                        — Home / landing page (Server Component, auth-aware CTAs)
+  icon.tsx                        — Browser tab icon (dove emoji via ImageResponse)
+  Header.tsx                      — Static header shell (logo + desktop nav + MobileNav)
+  not-found.tsx                   — Global 404 page
+  globals.css                     — Global styles + CSS variable theme (warm earthy palette)
 
   (auth)/
     login/page.tsx                — Login page
     signup/page.tsx               — Signup page
-    logout/page.tsx               — Logout page
+    logout/page.tsx               — Logout confirmation + redirect
     auth/confirm/route/route.ts   — Email OTP verification handler
 
   configuration/
-    page.tsx                      — Main builder page (client component, resizable panels layout)
+    page.tsx                      — Main builder page (client component)
+                                    Desktop: resizable panels (react-resizable-panels)
+                                    Mobile: Edit / Preview tab switcher
     PublishDialog.tsx             — Two-mode dialog: slug entry OR QR code view
     components/
       left-panel/
         LeftPanel.tsx             — Accordion of all input sections + Save/Publish/View buttons
-        InputSection.tsx          — Accordion item wrapper with EyeCheckbox visibility toggle
+        InputSection.tsx          — Accordion item with EyeCheckbox visibility toggle
         EyeCheckbox.tsx           — Eye icon checkbox bound to visibility.{key}
       right-panel/
         RightPanel.tsx            — Live preview using useWatch on all form fields
@@ -125,24 +129,32 @@ app/
   [slug]/
     page.tsx                      — Public memorial page (Server Component, dynamic route)
                                     Requires published=true, returns 404 otherwise
-                                    Supabase RLS policy: anon can SELECT where published=true
 
   common/
     form/Form.tsx                 — react-hook-form FormProvider wrapper
     button/Button.tsx             — AppButton wrapper around shadcn Button
     GalleryLightbox.tsx           — Client component: thumbnail grid + yet-another-react-lightbox
-    HeaderNavItems.tsx            — Client component: auth-reactive nav links (My Memorial, View Page)
-    LoginLogoutButton.tsx         — Client component: auth-reactive login/logout button
+    header/
+      HeaderNavItems.tsx          — Auth-reactive nav links (My Memorial, View Page)
+      LoginLogoutButton.tsx       — Auth-reactive sign in / log out button
+      MobileNav.tsx               — Hamburger menu for mobile (always-mounted dropdown)
     input/
       TextInput.tsx               — Labeled text input, forwards all HTML input props
       TextAreaInput.tsx           — Labeled textarea
-      ImageInput.tsx              — File input for images, supports multiple, accept="image/*"
+      ImageInput.tsx              — File input with 10 MB size rejection
       DateInput.tsx               — Date picker: shadcn Popover + Calendar, stores ISO string
-      GalleryInput.tsx            — Gallery manager: thumbnails with delete buttons, Add photos button
+      GalleryInput.tsx            — Gallery manager: thumbnails with delete, 10 MB rejection
 
-  error/page.tsx                  — Error page
+  error/page.tsx                  — Error page (full-height centered)
 
 components/ui/                    — shadcn-generated components (do not edit manually)
+
+utils/
+  supabase/                       — Supabase client helpers
+  compressImage.ts                — Client-side image compression (portrait/background/gallery presets)
+
+public/
+  robots.txt                      — Disallows all crawling except /
 ```
 
 ---
@@ -188,9 +200,9 @@ components/ui/                    — shadcn-generated components (do not edit m
 
 2. **`configurationService.checkSlugAvailability`** — duplicate of the Server Action in `lib/configuration-actions.ts`. The service method uses the browser client (anon key) while the Server Action uses the admin client (bypasses RLS). `PublishDialog` correctly uses the Server Action. The service method should be removed.
 
-3. **Home page** — `app/page.tsx` is an empty `<div>`. Needs a landing page.
+3. **`app/presentation/page.tsx`** — legacy stub, replaced by `app/[slug]/page.tsx`. Can be deleted.
 
-4. **`app/presentation/page.tsx`** — legacy stub, replaced by `app/[slug]/page.tsx`. Can be deleted.
+4. **Vercel prerender** — `/configuration` and `/` must have `export const dynamic = "force-dynamic"` or Vercel's build will attempt to statically prerender them and crash because env vars / cookies are not available at build time.
 
 ---
 
@@ -202,8 +214,8 @@ components/ui/                    — shadcn-generated components (do not edit m
 - [x] `saveConfiguration` hook handles all media types and diffs gallery to delete removed images from Storage
 - [x] `page.tsx` defaultValues and initialValues updated to new fields (empty string fallbacks, no placeholders)
 - [x] `LeftPanel` updated with all new accordion sections
-- [x] `ImageInput` updated: `name` prop, `accept="image/*"`, `multiple` support
-- [x] `GalleryInput` created: thumbnail grid with delete buttons, Add photos button, useController integration
+- [x] `ImageInput` updated: `name` prop, `accept="image/*"`, `multiple` support, 10 MB rejection
+- [x] `GalleryInput` created: thumbnail grid with delete buttons, Add photos button, 10 MB rejection
 - [x] `TextInput` updated: forwards all HTML input props
 - [x] `DateInput` created: shadcn Popover + Calendar, stores ISO string, `isValid` guard
 - [x] `RightPanel` updated: live preview of all fields, handles both File and string for gallery
@@ -211,29 +223,48 @@ components/ui/                    — shadcn-generated components (do not edit m
 - [x] `app/[slug]/page.tsx` created: public Server Component, `generateMetadata`, `notFound()` on missing/unpublished
 - [x] Supabase RLS policy added: anon users can SELECT configurations where `published = true`
 - [x] `PublishDialog` updated: two-mode dialog (edit slug / view QR), QR display, PNG download, copyable URL, "Open Page" link
-- [x] `LeftPanel` updated: Save / Publish / Edit URL / View Page buttons with correct conditions
-- [x] `page.tsx` updated: `publishDialogMode` state, resizable panel layout via `react-resizable-panels`
+- [x] `LeftPanel` updated: Save / Publish / Edit URL / View Page buttons with correct conditions; buttons stack on mobile
+- [x] `page.tsx` updated: resizable panels desktop layout + mobile Edit/Preview tab switcher
 - [x] Auth guard added in `middleware.tsx`: unauthenticated users redirected to `/login` for `/configuration`
 - [x] `utils/supabase/middleware.ts` updated: returns `{ response, user }` — single `getUser()` call shared
-- [x] `HeaderNavItems.tsx` created: client-side auth-reactive nav links
-- [x] Header updated: uses `HeaderNavItems` for dynamic links
-- [x] Visibility fixed for `bg_image` (was not checked in RightPanel) and `dates` (key mismatch corrected)
+- [x] `HeaderNavItems.tsx` created: client-side auth-reactive nav links; uses `onAuthStateChange` session payload directly (no extra round-trip)
+- [x] `MobileNav.tsx` created: hamburger menu with always-mounted dropdown (prevents auth fetch delay on open)
+- [x] `Header.tsx` refactored: static shell with desktop nav (`hidden md:flex`) + `MobileNav`
+- [x] `LoginLogoutButton` refactored: plain `<button>` with `mobile` prop; client-side `signOut()` so `onAuthStateChange` fires app-wide
+- [x] Visibility fixed for `bg_image` and `dates` key mismatch
 - [x] `@supabase/auth-ui-react` uninstalled (was unused)
+- [x] `browser-image-compression` installed; `utils/compressImage.ts` created with portrait/background/gallery presets
+- [x] Image compression wired into `useUserconfiguration.ts` before every `uploadMedia` call
+- [x] `InputSection.tsx` spacing fixed: `flex-1 min-w-0` on input area, `flex-shrink-0` on eye icon
+- [x] Dates row made responsive: `flex-col sm:flex-row`
+- [x] Color palette overhauled: warm earthy cream background, deep slate-blue primary, muted gold ring/accent
+- [x] `Header.tsx` and `layout.tsx` updated to `stone-*` color family
+- [x] Footer replaced with minimal one-line border + copyright
+- [x] Page `<title>` and meta description updated from default `create-next-app` values
+- [x] Home page (`app/page.tsx`) implemented: hero, features grid, auth-aware CTAs
+- [x] `app/not-found.tsx` created: custom 404 page
+- [x] `app/error/page.tsx` updated: full-height centered error page
+- [x] `app/(auth)/logout/page.tsx` updated: styled confirmation screen
+- [x] `layout.tsx` updated: `flex flex-col min-h-screen` + `<main className="flex-1">` for sticky footer
+- [x] Login/signup pages styled: warm gradient background, updated copy
+- [x] `robots.txt` added: only `/` is crawlable
+- [x] `app/icon.tsx` added: dove emoji browser tab icon via `ImageResponse`
+- [x] README rewritten: project-oriented, not scaffold boilerplate
 
 ---
 
 ## Next Steps (In Priority Order)
 
-### 1. Cleanup (fast)
+### 1. Vercel deployment fix
+
+- Add `export const dynamic = "force-dynamic"` to `app/page.tsx` and `app/configuration/page.tsx`
+- Add environment variables in Vercel project settings
+- Add Supabase redirect URLs for the production domain
+
+### 2. Cleanup
 
 - Remove `checkSlugAvailability` from `configurationService.ts` — Server Action is the correct implementation
 - Delete `app/presentation/page.tsx`
-
-### 2. Home page (`/`)
-
-- If logged in: show link to `/configuration` + link to `/{slug}` if published
-- If not logged in: marketing/landing content with login and signup links
-- Use `HeaderNavItems` pattern (client component with `onAuthStateChange`) or make it a Server Component that reads the session
 
 ### 3. Video URL improvements
 

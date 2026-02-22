@@ -124,6 +124,3 @@ function Feature({
       <span className="text-3xl">{icon}</span>
       <h3 className="font-semibold text-stone-800">{title}</h3>
       <p className="text-stone-500 text-sm leading-relaxed">{body}</p>
-    </div>
-  );
-}
