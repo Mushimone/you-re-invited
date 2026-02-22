@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "You're Invited",
+  title: "Digital Memorials for Your Loved Ones",
   description:
     "Create and share a beautiful memorial page for your loved ones.",
 };
