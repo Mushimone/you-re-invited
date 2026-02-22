@@ -75,7 +75,7 @@ export default async function Presentation({ params }: Props) {
       className="min-h-screen bg-cover bg-center flex items-center justify-center"
       style={{ backgroundImage: `url(${bgUrl})` }}
     >
-      <div className="p-8 bg-white bg-opacity-80 rounded-xl flex flex-col items-center gap-4 max-w-md w-full shadow-lg">
+      <div className="p-8 bg-white bg-opacity-90 rounded-xl flex flex-col items-center gap-4 max-w-2xl w-full shadow-lg mx-4">
         {v.profile_image && config.profile_image && (
           <img
             src={config.profile_image}

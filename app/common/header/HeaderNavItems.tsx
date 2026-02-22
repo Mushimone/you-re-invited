@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/supabaseClient";
+import { usePathname } from "next/navigation";
 
 export function HeaderNavItems() {
   const [slug, setSlug] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createClient();
@@ -31,12 +33,28 @@ export function HeaderNavItems() {
     fetchState();
 
     // Re-run whenever auth state changes (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      fetchState();
-    });
+    // Use the session already provided by the event — avoids a redundant getUser() round-trip
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session?.user) {
+          setLoggedIn(false);
+          setSlug(null);
+          return;
+        }
+        setLoggedIn(true);
+        supabase
+          .from("configurations")
+          .select("slug, published")
+          .eq("user_id", session.user.id)
+          .single()
+          .then(({ data }) => {
+            setSlug(data?.published && data.slug ? data.slug : null);
+          });
+      },
+    );
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [pathname]);
 
   return (
     <>

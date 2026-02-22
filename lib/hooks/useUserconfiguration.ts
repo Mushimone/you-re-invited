@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Configuration } from "../types/configuration";
 import { createClient } from "@/utils/supabase/supabaseClient";
 import { configurationService } from "../services/configurationService";
+import { compressImage } from "@/utils/compressImage";
 
 function useUserConfiguration() {
   const [configuration, setConfiguration] = useState<Configuration | null>(
@@ -49,8 +50,12 @@ function useUserConfiguration() {
 
         let profile_image = configuration?.config.profile_image ?? null;
         if (formData.profile_image?.[0] instanceof File) {
-          profile_image = await configurationService.uploadMedia(
+          const compressed = await compressImage(
             formData.profile_image[0],
+            "portrait",
+          );
+          profile_image = await configurationService.uploadMedia(
+            compressed,
             "images",
             user.id,
           );
@@ -58,8 +63,12 @@ function useUserConfiguration() {
 
         let bg_image = configuration?.config.bg_image ?? null;
         if (formData.bg_image?.[0] instanceof File) {
-          bg_image = await configurationService.uploadMedia(
+          const compressed = await compressImage(
             formData.bg_image[0],
+            "background",
+          );
+          bg_image = await configurationService.uploadMedia(
+            compressed,
             "images",
             user.id,
           );
@@ -70,11 +79,17 @@ function useUserConfiguration() {
 
         const gallery_images: string[] = (
           await Promise.all(
-            incoming.map((item) =>
-              item instanceof File
-                ? configurationService.uploadMedia(item, "images", user.id)
-                : item,
-            ),
+            incoming.map(async (item) => {
+              if (item instanceof File) {
+                const compressed = await compressImage(item, "gallery");
+                return configurationService.uploadMedia(
+                  compressed,
+                  "images",
+                  user.id,
+                );
+              }
+              return item;
+            }),
           )
         ).filter(Boolean) as string[];
 

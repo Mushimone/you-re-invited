@@ -19,9 +19,21 @@ export function GalleryInput({ name, label }: IProps) {
   const getThumbUrl = (item: File | string) =>
     item instanceof File ? URL.createObjectURL(item) : item;
 
+  const MAX_MB = 10;
+
   const handleAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFiles = Array.from(e.target.files ?? []);
-    field.onChange([...items, ...newFiles]);
+    const selected = Array.from(e.target.files ?? []);
+    const rejected = selected.filter((f) => f.size > MAX_MB * 1024 * 1024);
+    const accepted = selected.filter((f) => f.size <= MAX_MB * 1024 * 1024);
+    if (rejected.length > 0) {
+      alert(
+        `${rejected.length} file(s) exceed the ${MAX_MB} MB limit and were not added:\n` +
+          rejected.map((f) => f.name).join("\n"),
+      );
+    }
+    if (accepted.length > 0) {
+      field.onChange([...items, ...accepted]);
+    }
     // Reset input so the same file can be re-added if needed
     e.target.value = "";
   };

@@ -98,14 +98,14 @@ export default function ConfigurationPage() {
     <Form initialValues={initialValues} onSubmit={handleSubmit}>
       <Group
         orientation="horizontal"
-        className="mx-auto bg-gray-100"
+        className="mx-auto bg-stone-200"
         style={{ minHeight: "100vh" }}
       >
         <Panel
-          defaultSize="33%"
+          defaultSize="28%"
           minSize="20%"
-          maxSize="60%"
-          className="p-4 bg-purple-100 overflow-y-auto"
+          maxSize="50%"
+          className="p-4 bg-stone-100 overflow-y-auto border-r border-stone-300"
         >
           <LeftPanel
             onOpenPublish={() => {
@@ -121,7 +121,7 @@ export default function ConfigurationPage() {
           />
         </Panel>
         {/* Right part */}
-        <Separator className="w-1 bg-purple-300 hover:bg-purple-500 cursor-col-resize transition-colors" />
+        <Separator className="w-1 bg-stone-300 hover:bg-stone-500 cursor-col-resize transition-colors" />
         <Panel minSize={20} className="overflow-y-auto">
           <RightPanel />
         </Panel>

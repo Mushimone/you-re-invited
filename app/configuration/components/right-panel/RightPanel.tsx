@@ -60,7 +60,7 @@ export function RightPanel(props: IRightPanelProps) {
         backgroundImage: `url(${bgUrl})`,
       }}
     >
-      <div className="p-8 bg-white bg-opacity-80 rounded-xl flex flex-col items-center gap-4 max-w-md w-full shadow-lg">
+      <div className="p-8 bg-white bg-opacity-90 rounded-xl flex flex-col items-center gap-4 max-w-2xl w-full shadow-lg mx-4">
         {/* Portrait */}
         {visibility.profile_image && portraitUrl && (
           <img
