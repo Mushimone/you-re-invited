@@ -1,3 +1,6 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { signup } from "@/lib/auth-action";
 
 export function SignUpForm() {
+  const [state, formAction, pending] = useActionState(signup, null);
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
@@ -22,7 +27,7 @@ export function SignUpForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action="">
+        <form action={formAction}>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -56,10 +61,13 @@ export function SignUpForm() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input name="password" id="password" type="password" />
+              <Input name="password" id="password" type="password" required />
             </div>
-            <Button formAction={signup} type="submit" className="w-full">
-              Create an account
+            {state?.error && (
+              <p className="text-sm text-red-600">{state.error}</p>
+            )}
+            <Button type="submit" disabled={pending} className="w-full">
+              {pending ? "Creating account…" : "Create an account"}
             </Button>
           </div>
         </form>

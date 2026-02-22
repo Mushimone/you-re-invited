@@ -7,9 +7,7 @@ export function Header() {
   return (
     <header className="relative bg-stone-950 text-stone-100 px-6 py-3 border-b border-stone-800">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">
-          You&apos;re Invited
-        </h1>
+        <h1 className="text-xl font-bold tracking-tight">Digital Memorial</h1>
 
         {/* Desktop nav — hidden on mobile */}
         <nav className="hidden md:flex items-center gap-1">

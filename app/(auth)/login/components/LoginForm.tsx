@@ -1,3 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
+import Link from "next/link";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +21,8 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [state, formAction, pending] = useActionState(login, null);
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -26,7 +33,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action="">
+          <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
@@ -50,18 +57,21 @@ export function LoginForm({
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
+              {state?.error && (
+                <p className="text-sm text-red-600">{state.error}</p>
+              )}
               <div className="flex flex-col gap-3">
-                <Button type="submit" formAction={login} className="w-full">
-                  Login
+                <Button type="submit" disabled={pending} className="w-full">
+                  {pending ? "Signing in…" : "Login"}
                 </Button>
                 <SignInWithGoogleButton />
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a href="/signup" className="underline underline-offset-4">
+              <Link href="/signup" className="underline underline-offset-4">
                 Sign up
-              </a>
+              </Link>
             </div>
           </form>
         </CardContent>

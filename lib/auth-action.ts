@@ -6,11 +6,12 @@ import { headers } from "next/headers";
 
 import { createClient } from "@/utils/supabase/server";
 
-export async function login(formData: FormData) {
+export async function login(
+  _prevState: { error: string } | null,
+  formData: FormData,
+): Promise<{ error: string }> {
   const supabase = await createClient();
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
   const data = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -19,18 +20,20 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    redirect("/error");
+    console.error("[login]", error.message);
+    return { error: error.message };
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/configuration");
 }
 
-export async function signup(formData: FormData) {
+export async function signup(
+  _prevState: { error: string } | null,
+  formData: FormData,
+): Promise<{ error: string }> {
   const supabase = await createClient();
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
   const data = {
@@ -47,11 +50,11 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp(data);
 
   if (error) {
-    redirect("/error");
+    console.error("[signup]", error.message);
+    return { error: error.message };
   }
 
-  revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/signup/verify");
 }
 
 export async function signout() {
