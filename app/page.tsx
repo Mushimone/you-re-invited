@@ -1,6 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const supabase = await createClient();
   const {
@@ -124,3 +126,6 @@ function Feature({
       <span className="text-3xl">{icon}</span>
       <h3 className="font-semibold text-stone-800">{title}</h3>
       <p className="text-stone-500 text-sm leading-relaxed">{body}</p>
+    </div>
+  );
+}
