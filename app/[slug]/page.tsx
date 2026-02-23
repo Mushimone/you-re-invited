@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Configuration } from "@/lib/types/configuration";
 import { format, parseISO, isValid } from "date-fns";
 import type { Metadata } from "next";
+import { getVideoEmbedUrl } from "@/utils/getVideoEmbed";
 import { GalleryLightbox } from "@/app/common/GalleryLightbox";
 
 interface Props {
@@ -104,15 +105,20 @@ export default async function Presentation({ params }: Props) {
           <GalleryLightbox urls={config.gallery_images} />
         )}
 
-        {v.video_url && config.video_url && (
-          <div className="w-full aspect-video">
-            <iframe
-              src={config.video_url.replace("watch?v=", "embed/")}
-              className="w-full h-full rounded"
-              allowFullScreen
-            />
-          </div>
-        )}
+        {v.video_url &&
+          config.video_url &&
+          (() => {
+            const embedSrc = getVideoEmbedUrl(config.video_url);
+            return embedSrc ? (
+              <div className="w-full aspect-video">
+                <iframe
+                  src={embedSrc}
+                  className="w-full h-full rounded"
+                  allowFullScreen
+                />
+              </div>
+            ) : null;
+          })()}
 
         {v.music_url && config.music_url && (
           <audio controls src={config.music_url} className="w-full" />
