@@ -2,6 +2,7 @@ import { GalleryLightbox } from "@/app/common/GalleryLightbox";
 import { format, isValid } from "date-fns";
 import { parseISO } from "date-fns/parseISO";
 import { useWatch } from "react-hook-form";
+import { getVideoEmbedUrl } from "@/utils/getVideoEmbed";
 
 interface IRightPanelProps {}
 
@@ -95,15 +96,21 @@ export function RightPanel(props: IRightPanelProps) {
         )}
 
         {/* Video */}
-        {visibility.video_url && video_url && typeof video_url === "string" && (
-          <div className="w-full aspect-video">
-            <iframe
-              src={video_url.replace("watch?v=", "embed/")}
-              className="w-full h-full rounded"
-              allowFullScreen
-            />
-          </div>
-        )}
+        {visibility.video_url &&
+          video_url &&
+          typeof video_url === "string" &&
+          (() => {
+            const embedSrc = getVideoEmbedUrl(video_url);
+            return embedSrc ? (
+              <div className="w-full aspect-video">
+                <iframe
+                  src={embedSrc}
+                  className="w-full h-full rounded"
+                  allowFullScreen
+                />
+              </div>
+            ) : null;
+          })()}
 
         {/* Music */}
         {visibility.music_url && music_url && typeof music_url === "string" && (
