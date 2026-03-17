@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Ping Database via REST API
         run: |
-          curl -X GET "https://YOUR_PROJECT_REF.supabase.co/rest/v1/YOUR_TABLE_NAME?select=*" \
+          curl -X GET "https://evbgthhyaayjjhhihnyv.supabase.co/rest/v1/configurations?select=*" \
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
           -I
